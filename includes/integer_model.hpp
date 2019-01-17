@@ -17,3 +17,5 @@ public:
   static void Mutation(Genotype& genotype);
   
 };
+
+std::vector<Phenotype_ID> AssemblePlasticGenotype(Genotype genotype,PhenotypeTable* pt);
