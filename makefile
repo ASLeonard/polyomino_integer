@@ -4,7 +4,9 @@ MAKEFLAGS+="-j $(nproc)"
 CXX         := g++
 
 #The Target Binary Program
-PE_TARGET   := GP_mapper
+PE_TARGET   := assembly_mapper
+API_TARGET 	:= lib_integer_model_api.so
+GP_TARGET		:= gpmap
 
 
 #The Directories, Source, Includes, Objects, Binary and Resources
@@ -21,7 +23,7 @@ OBJEXT      := o
 #VPATH=src:polyomino/src
 
 #Flags, Libraries and Includes
-CXXFLAGS    := -std=gnu++17 -Wall -Wextra -pedantic -pipe -march=haswell -flto -flto-partition=none -no-pie -ffunction-sections -fdata-sections $(cmdflag)
+CXXFLAGS    := -std=gnu++17 -Wall -Wextra -pedantic -pipe -march=native -flto -flto-partition=none -no-pie -ffunction-sections -fdata-sections $(cmdflag)
 ifndef DEBUG
 CXXFLAGS += -O3 -fopenmp
 else
@@ -35,11 +37,14 @@ INCDEP      := -I$(INCDIR) -I$(LIBDIR)/$(INCDIR)
 #DO NOT EDIT BELOW THIS LINE
 #---------------------------------------------------------------------------------
 PE_SOURCES := $(shell find $(SRCDIR) -type f -name integer_*.$(SRCEXT))
-PE_OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(PE_SOURCES:.$(SRCEXT)=.$(OBJEXT)))
+GP_SOURCES := $(shell find $(SRCDIR) -type f -name genotype_*.$(SRCEXT))
+
+PE_OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(PE_SOURCES:.$(SRCEXT)=.$(OBJEXT)))
+GP_OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(GP_SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
 
 #Default Make
-all: Pe 
+all: Pe
 
 #Clean only Objects
 clean:
@@ -50,9 +55,17 @@ clean:
 -include $(PE_OBJECTS:.$(OBJEXT)=.$(DEPEXT))
 -include $(CORE_OBJECTS:.$(OBJEXT)=.$(DEPEXT))
 
-Pe: $(PE_OBJECTS) $(CORE_OBJECTS) 
+Pe: $(PE_OBJECTS) $(CORE_OBJECTS)
 	@mkdir -p $(TARGETDIR)
 	$(CXX) $(CXXFLAGS) -Wl,--gc-sections -o $(TARGETDIR)/$(PE_TARGET) $^
+
+GP: $(GP_OBJECTS) $(PE_OBJECTS) $(CORE_OBJECTS)
+	@mkdir -p $(TARGETDIR)
+	$(CXX) $(CXXFLAGS) -Wl,--gc-sections -o $(TARGETDIR)/$(PE_TARGET) $^
+
+API: $(PE_OBJECTS) $(CORE_OBJECTS)
+	@mkdir -p $(TARGETDIR)
+	$(CXX)  -shared -fPIC $(CXXFLAGS) -o scripts/$(API_TARGET) $^
 
 
 #Compile
