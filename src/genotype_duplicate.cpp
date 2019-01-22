@@ -1,8 +1,6 @@
 #include "genotype_duplicate.hpp"
-#include <sstream>
-#include <iostream>
-#include <iterator>
 
+// Necessary to check that genotype.size() / 4 returns desired value
 
 std::vector<Genotype> GenomesDuplication(std::vector<Genotype> genomes)
 {
@@ -20,9 +18,9 @@ std::vector<Genotype> GeneDuplication(Genotype& genotype)
 {
   std::vector <Genotype> duplicates;
 
-  for(uint8_t index=0; index < simulation_params::n_genes; ++index)
+  for(uint8_t index=0; index < (genotype.size() / 4); ++index)
   {
-    Genotype duplicate(4 * simulation_params::n_genes);
+    Genotype duplicate(genotype.size() / 4);
     std::copy(std::begin(genotype), std::end(genotype), std::begin(duplicate));
 
     for(uint8_t tail=0; tail < 4; tail++)

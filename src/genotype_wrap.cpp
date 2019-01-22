@@ -18,5 +18,4 @@ PYBIND11_MODULE(polyo, m) {
       py::arg("table_file") = "None");
 
     // m.def("GenerateTable", &GenerateTableAPI, "Test function to print the phenotype Table", py::arg("genotype"), py::arg("filepath") = "None", py::arg("filename") = "None");
-
 }
