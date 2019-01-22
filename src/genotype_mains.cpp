@@ -6,18 +6,18 @@
 // #include <iterator>
 //
 //
-namespace simulation_params
-{
-  uint16_t n_genes, colours, metric_colours;
-  uint16_t phenotype_builds, preprocess_builds;
-  uint32_t n_samples, n_jiggle;
-  double UND_threshold;
-  bool allow_duplicates, STERIC_FORBIDDEN, iso, dup_aware;
-  bool exhaustive, metrics, duplicate_exhaustive;
-  bool table, quick_map;
-
-  // std::mt19937 RNG_Engine(std::random_device{}());
-}
+// namespace simulation_params
+// {
+//   uint16_t n_genes, colours, metric_colours;
+//   uint16_t phenotype_builds, preprocess_builds;
+//   uint32_t n_samples, n_jiggle;
+//   double UND_threshold;
+//   bool allow_duplicates, STERIC_FORBIDDEN, iso, dup_aware;
+//   bool exhaustive, metrics, duplicate_exhaustive;
+//   bool table, quick_map;
+//
+//   // std::mt19937 RNG_Engine(std::random_device{}());
+// }
 //
 // int main (int argc, char *argv[])
 // {
@@ -326,7 +326,7 @@ int main() {
      gx =qq();
 
    }while(gx.size()!=0);
-  
-  
+
+
 
 }

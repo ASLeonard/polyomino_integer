@@ -1,14 +1,14 @@
 #include "genotype_iofunc.hpp"
 #include <iostream>
 
-namespace simulation_params
-{
-  extern uint16_t n_genes, colours;
-  extern std::mt19937 RNG_Engine;
-  extern uint16_t phenotype_builds;
-  extern uint32_t n_samples;
-  extern bool allow_duplicates;
-}
+// namespace simulation_params
+// {
+//   extern uint16_t n_genes, colours;
+//   extern std::mt19937 RNG_Engine;
+//   extern uint16_t phenotype_builds;
+//   extern uint32_t n_samples;
+//   extern bool allow_duplicates;
+// }
 
 std::vector<Genotype> ExhaustiveMinimalGenotypesIL(PhenotypeTable* pt);
 std::vector<Genotype> ExhaustiveMinimalGenotypesFiltered(PhenotypeTable* pt);
@@ -134,7 +134,7 @@ struct GenotypeGenerator
 
   Genotype next_genotype() {
     Genotype genotype;
-    
+
     while(!is_done) {
     inc_lab:
       genotype.clear();

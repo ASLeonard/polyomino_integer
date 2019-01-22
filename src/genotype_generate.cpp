@@ -5,20 +5,22 @@
 #include <set>
 #include <algorithm>
 
-std::vector<Genotype> SampleMinimalGenotypes(PhenotypeTable* pt)
+std::vector<Genotype> SampleMinimalGenotypes(PhenotypeTable* pt,
+  uint8_t n_genes, int8_t colours, uint64_t n_samples)
 {
   uint64_t good_genotypes=0, generated_genotypes=0;
-  std::vector<Genotype> genomes(simulation_params::n_samples + 4);
+  std::vector<Genotype> genomes(n_samples + 4);
   Phenotype_ID rare_pID = {0, 0}, unbound_pID = {255, 0};
   std::vector<Phenotype_ID> pIDs;
 
-  std::cout << "Generating " <<+ simulation_params::n_samples << " samples \n";
 
-  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes, -1, simulation_params::colours);
+  std::cout << "Generating " <<+ n_samples << " samples \n";
+
+  GenotypeGenerator ggenerator = GenotypeGenerator(n_genes, -1, colours);
   //ggenerator.init();
 
-  std::cout << "Threshold is : " << (ceil(simulation_params::phenotype_builds * simulation_params::UND_threshold));
-  std::cout << " out of " <<+ simulation_params::phenotype_builds << " builds \n";
+  std::cout << "Threshold is : " << (ceil(pt->phenotype_builds * pt->UND_threshold));
+  std::cout << " out of " <<+ pt->phenotype_builds << " builds \n";
 
 #pragma omp parallel firstprivate(pIDs)
   while(true)
@@ -32,23 +34,23 @@ std::vector<Genotype> SampleMinimalGenotypes(PhenotypeTable* pt)
 #pragma omp atomic read
     local_generated = generated_genotypes;
 
-    if(local_counter >= simulation_params::n_samples)
+    if(local_counter >= n_samples)
       break;
 
 #pragma omp atomic update
   ++generated_genotypes;
 
     uint32_t lbound_neck=0;
-    for(uint8_t neck_ind=0; neck_ind < simulation_params::n_genes; ++neck_ind)
+    for(uint8_t neck_ind=0; neck_ind < n_genes; ++neck_ind)
     {
-      lbound_neck = std::uniform_int_distribution<uint32_t>{lbound_neck, ggenerator.n_necklaces-1}(simulation_params::RNG_Engine);
+      lbound_neck = std::uniform_int_distribution<uint32_t>{lbound_neck, ggenerator.n_necklaces-1}(RNG_Engine);
       states.emplace_back(lbound_neck);
-      if(!simulation_params::allow_duplicates)
-      {
-        if((lbound_neck + simulation_params::n_genes - neck_ind) > ggenerator.n_necklaces)
-          continue;
-        ++lbound_neck;
-      }
+      // if(!simulation_params::allow_duplicates)
+      // {
+      //   if((lbound_neck + simulation_params::n_genes - neck_ind) > ggenerator.n_necklaces)
+      //     continue;
+      //   ++lbound_neck;
+      // }
     }
 
     for(auto state : states)
@@ -76,7 +78,7 @@ std::vector<Genotype> SampleMinimalGenotypes(PhenotypeTable* pt)
   // auto last = std::unique(std::begin(genomes), std::end(genomes));
   // genomes.erase(last, std::end(genomes));
 
-  while(genomes.size() > simulation_params::n_samples)
+  while(genomes.size() > n_samples)
     genomes.pop_back();
 
   std::cout << "Final Values : Found " <<+ genomes.size() << " out of " <<+ generated_genotypes << " generated \n";
@@ -121,21 +123,22 @@ std::vector<Genotype> SampleMinimalGenotypes(PhenotypeTable* pt)
 //   return genomes;
 // }
 
-std::vector<Genotype> ExhaustiveMinimalGenotypesFiltered(PhenotypeTable* pt)
+std::vector<Genotype> ExhaustiveMinimalGenotypesFiltered(PhenotypeTable* pt,
+  uint8_t n_genes, int8_t colours)
 {
   std::vector<Genotype> genomes;
 
   std::cout << "Generating all minimal samples\n";
 
-  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes, -1,simulation_params::colours);
+  GenotypeGenerator ggenerator = GenotypeGenerator(n_genes, -1, colours);
   //ggenerator.init();
   Genotype genotype, nullg;
   Phenotype_ID rare_pID = {0, 0}, unbound_pID = {255, 0};
   std::vector<Phenotype_ID> pIDs;
   uint64_t good_genotypes = 0, generated_genotypes = 0;
 
-  std::cout << "Threshold is : " << (ceil(simulation_params::phenotype_builds * simulation_params::UND_threshold));
-  std::cout << " out of " <<+ simulation_params::phenotype_builds << " builds \n";
+  std::cout << "Threshold is : " << (ceil(pt->phenotype_builds * pt->UND_threshold));
+  std::cout << " out of " <<+ pt->phenotype_builds << " builds \n";
 
   while((genotype=ggenerator())!=nullg)
   {
@@ -161,13 +164,14 @@ std::vector<Genotype> ExhaustiveMinimalGenotypesFiltered(PhenotypeTable* pt)
 }
 
 // Temporary Fix
-std::vector<Genotype> ExhaustiveMinimalGenotypesFilteredDuplicate(std::vector<Genotype>& genomes, PhenotypeTable* pt)
+std::vector<Genotype> ExhaustiveMinimalGenotypesFilteredDuplicate(std::vector<Genotype>& genomes, PhenotypeTable* pt,
+  uint8_t n_genes, int8_t colours)
 {
   std::vector<Genotype> duplicates, dups;
 
   std::cout << "Generating all minimal samples and adding duplicate gene\n";
 
-  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes - 1,-1, simulation_params::colours);
+  GenotypeGenerator ggenerator = GenotypeGenerator(n_genes - 1, -1, colours);
   //ggenerator.init();
   Genotype genotype, nullg;
   Phenotype_ID rare_pID = {0, 0}, unbound_pID = {255, 0};
@@ -175,8 +179,8 @@ std::vector<Genotype> ExhaustiveMinimalGenotypesFilteredDuplicate(std::vector<Ge
   uint64_t good_genotypes = 0, generated_genotypes = 0;
   bool keep_original;
 
-  std::cout << "Threshold is : " << (ceil(simulation_params::phenotype_builds * simulation_params::UND_threshold));
-  std::cout << " out of " <<+ simulation_params::phenotype_builds << " builds \n";
+  std::cout << "Threshold is : " << (ceil(pt->phenotype_builds * pt->UND_threshold));
+  std::cout << " out of " <<+ pt->phenotype_builds << " builds \n";
 
   while((genotype=ggenerator())!=nullg)
   {
@@ -205,19 +209,20 @@ std::vector<Genotype> ExhaustiveMinimalGenotypesFilteredDuplicate(std::vector<Ge
   return duplicates;
 }
 
-std::vector<Genotype> ExhaustiveMinimalGenotypesFastFiltered(PhenotypeTable* pt)
+std::vector<Genotype> ExhaustiveMinimalGenotypesFastFiltered(PhenotypeTable* pt ,
+  uint8_t n_genes, int8_t colours)
 {
   std::vector<Genotype> genomes;
 
   std::cout << "Generating all minimal samples\n";
 
-  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes, -1,simulation_params::colours);
+  GenotypeGenerator ggenerator = GenotypeGenerator(n_genes, -1, colours);
   //ggenerator.init();
   Genotype genotype, nullg;
   uint64_t good_genotypes = 0, generated_genotypes = 0;
 
-  std::cout << "Threshold is : " << (ceil(simulation_params::phenotype_builds * simulation_params::UND_threshold));
-  std::cout << " out of " <<+ simulation_params::phenotype_builds << " builds \n";
+  std::cout << "Threshold is : " << (ceil(pt->phenotype_builds * pt->UND_threshold));
+  std::cout << " out of " <<+ pt->phenotype_builds << " builds \n";
 
   while((genotype=ggenerator())!=nullg)
   {
