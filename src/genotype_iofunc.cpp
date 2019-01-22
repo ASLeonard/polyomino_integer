@@ -4,69 +4,69 @@
 #include <string>
 #include <utility>
 
-namespace io_params
-{
-  std::string file_path, file_details, extra, config_file;
-  std::string out_genome_file, in_genome_file;
-  std::string duplicate_file;
-  std::string out_phenotype_file, in_phenotype_file;
-  std::string set_file, preprocess_file;
-  std::string set_metric_file, genome_metric_file;
-  std::string ending=".txt", iso_ending="_Iso.txt";
-}
-
-void infer_file_details()
-{
-  using namespace simulation_params;
-
-  std::string file_details = "_N" + std::to_string(n_genes);
-  file_details += "_C" + std::to_string(colours);
-  file_details += "_T" + std::to_string((int) ceil(100 * UND_threshold));
-  file_details += "_B" + std::to_string(phenotype_builds);
-  io_params::file_details = file_details;
-
-  std::string extra = "_Cx" + std::to_string(metric_colours);
-  extra += "_J" + std::to_string(n_jiggle);
-  io_params::extra = extra;
-}
-
-void all_files_to_full_names()
-{
-  using namespace io_params;
-  infer_file_details();
-
-  in_phenotype_file = file_path + in_phenotype_file + ending;
-
-  in_genome_file = full_filename(in_genome_file, false, simulation_params::iso);
-  out_phenotype_file = full_filename(out_phenotype_file, false, false);
-  genome_metric_file = full_filename(genome_metric_file, true, simulation_params::iso);
-  set_metric_file = full_filename(set_metric_file, true, simulation_params::iso);
-  set_file = full_filename(set_file, false, simulation_params::iso);
-  preprocess_file = full_filename(preprocess_file, false, simulation_params::iso);
-  duplicate_file = full_filename(duplicate_file, false, simulation_params::iso);
-
-  if(simulation_params::duplicate_exhaustive)
-  {
-    simulation_params::n_genes -= 1;
-    infer_file_details();
-    out_genome_file = full_filename(out_genome_file, false, false);
-    simulation_params::n_genes += 1;
-  } else
-    out_genome_file = full_filename(out_genome_file, false, false);
-}
-
-std::string full_filename(std::string file_name, bool extra, bool iso)
-{
-  std::string full = io_params::file_path + file_name + io_params::file_details;
-  if(extra)
-    full += io_params::extra;
-  if(iso)
-    full += io_params::iso_ending;
-  else
-    full += io_params::ending;
-
-  return full;
-}
+// namespace io_params
+// {
+//   std::string file_path, file_details, extra, config_file;
+//   std::string out_genome_file, in_genome_file;
+//   std::string duplicate_file;
+//   std::string out_phenotype_file, in_phenotype_file;
+//   std::string set_file, preprocess_file;
+//   std::string set_metric_file, genome_metric_file;
+//   std::string ending=".txt", iso_ending="_Iso.txt";
+// }
+//
+// void infer_file_details()
+// {
+//   using namespace simulation_params;
+//
+//   std::string file_details = "_N" + std::to_string(n_genes);
+//   file_details += "_C" + std::to_string(colours);
+//   file_details += "_T" + std::to_string((int) ceil(100 * UND_threshold));
+//   file_details += "_B" + std::to_string(phenotype_builds);
+//   io_params::file_details = file_details;
+//
+//   std::string extra = "_Cx" + std::to_string(metric_colours);
+//   extra += "_J" + std::to_string(n_jiggle);
+//   io_params::extra = extra;
+// }
+//
+// void all_files_to_full_names()
+// {
+//   using namespace io_params;
+//   infer_file_details();
+//
+//   in_phenotype_file = file_path + in_phenotype_file + ending;
+//
+//   in_genome_file = full_filename(in_genome_file, false, simulation_params::iso);
+//   out_phenotype_file = full_filename(out_phenotype_file, false, false);
+//   genome_metric_file = full_filename(genome_metric_file, true, simulation_params::iso);
+//   set_metric_file = full_filename(set_metric_file, true, simulation_params::iso);
+//   set_file = full_filename(set_file, false, simulation_params::iso);
+//   preprocess_file = full_filename(preprocess_file, false, simulation_params::iso);
+//   duplicate_file = full_filename(duplicate_file, false, simulation_params::iso);
+//
+//   if(simulation_params::duplicate_exhaustive)
+//   {
+//     simulation_params::n_genes -= 1;
+//     infer_file_details();
+//     out_genome_file = full_filename(out_genome_file, false, false);
+//     simulation_params::n_genes += 1;
+//   } else
+//     out_genome_file = full_filename(out_genome_file, false, false);
+// }
+//
+// std::string full_filename(std::string file_name, bool extra, bool iso)
+// {
+//   std::string full = io_params::file_path + file_name + io_params::file_details;
+//   if(extra)
+//     full += io_params::extra;
+//   if(iso)
+//     full += io_params::iso_ending;
+//   else
+//     full += io_params::ending;
+//
+//   return full;
+// }
 
 
 // void PrintConfigFile(std::string config_file)
@@ -164,8 +164,8 @@ void PrintSetTable(std::string set_file, Set_to_Genome& set_to_genome)
 void header_metric_files(std::ofstream& set_metric_out, std::ofstream& genome_metric_out)
 {
   // Logging
-  std::cout << "Print metrics to files : \n";
-  std::cout << io_params::set_metric_file << "\n" << io_params::genome_metric_file << "\n";
+  // std::cout << "Print metrics to files : \n";
+  // std::cout << io_params::set_metric_file << "\n" << io_params::genome_metric_file << "\n";
 
   // Header for the metric files
   set_metric_out << "srobustness irobustness evolvability";
@@ -179,8 +179,6 @@ void header_metric_files(std::ofstream& set_metric_out, std::ofstream& genome_me
   genome_metric_out << " rare unbound complex_diversity diversity";
   genome_metric_out << " neutral_weight frequencies pIDs\n";
 }
-
-
 
 void LoadGenomeFile(std::string genome_file, std::vector<Genotype>& genomes)
 {
