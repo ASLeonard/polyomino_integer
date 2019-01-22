@@ -44,7 +44,7 @@ GP_OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(GP_SOURCES:.$(SRCEXT)=.$(OB
 
 
 #Default Make
-all: Pe
+all: GP
 
 #Clean only Objects
 clean:

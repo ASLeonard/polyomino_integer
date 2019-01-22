@@ -23,47 +23,51 @@ std::vector<Genotype> ExhaustiveMinimalGenotypesFilteredDuplicate(std::vector<Ge
 /*Minimal genotype methods*/
 struct NecklaceFactory
 {
-  uint8_t colours=1;
-  std::vector<std::vector<uint8_t> > necklaces;
-  std::vector<uint8_t> necklace_grower;
+  int8_t low_colours,high_colours=1;
+  std::vector<std::vector<int8_t> > necklaces;
+  std::vector<int8_t> necklace_grower;
 
-  NecklaceFactory()  {necklace_grower.assign(5,0);}
+  NecklaceFactory(int8_t lcol,int8_t hcol) {
+    low_colours=lcol;
+    high_colours=hcol;
+    necklace_grower.assign(5,low_colours);
+    crsms_gen(1,1);
+  }
 
-  void GenNecklaces(int8_t c);
+  bool is_finite_necklace(std::vector<int8_t>& neck);
 
-  bool is_finite_necklace(std::vector<uint8_t>& neck);
+  void is_necklace(int64_t j);
 
-  void is_necklace(uint64_t j);
-
-  void crsms_gen(uint64_t n, uint64_t j);
+  void crsms_gen(int64_t n, int64_t j);
 };
 
 struct GenotypeGenerator
 {
   bool is_done=false;
-  uint8_t n_genes,colours;
-  std::vector<uint32_t> necklace_states;
-  std::vector<std::vector<uint8_t> > necklaces;
+  uint8_t n_genes;
+  int8_t low_colours,high_colours;
+  std::vector<int32_t> necklace_states;
+  std::vector<std::vector<int8_t> > necklaces;
   uint32_t n_necklaces;
-  Genotype nullg;
 
-  void init()
-  {
-    NecklaceFactory necks=NecklaceFactory();
-    necks.GenNecklaces(colours);
+
+  GenotypeGenerator(uint8_t a,int8_t b,int8_t c) {
+    n_genes= a;
+    low_colours=b;
+    high_colours=c;
+    necklace_states.assign(a,0);
+    NecklaceFactory necks=NecklaceFactory(low_colours,high_colours);
     necklaces=necks.necklaces;
     n_necklaces=necklaces.size();
-    necklace_states[0]=1;
+    necklace_states[0]=0;
   }
-
-  GenotypeGenerator(uint8_t a,uint8_t b) {n_genes= a; colours=b; necklace_states.assign(a,0);}
 
   Genotype operator() ()
   {
     return !is_done ? next_genotype() : Genotype{};
   }
 
-  bool valid_growing_faces(Genotype& genotype, uint8_t max_face)
+  bool valid_growing_faces(Genotype& genotype, int8_t max_face)
   {
     for(auto face : genotype)
     {
@@ -77,7 +81,8 @@ struct GenotypeGenerator
 
   bool valid_bindings(Genotype& genotype)
   {
-    for(uint8_t interface=1; interface<=*std::max_element(genotype.begin(), genotype.end()); interface+=2)
+    //negative interfaces self-interact, trivially valid bindings
+    for(int8_t interface=1; interface<=*std::max_element(genotype.begin(), genotype.end()); interface+=2)
     {
       if(std::find(genotype.begin(),genotype.end(),interface)!=genotype.end())
       { //is present
@@ -94,54 +99,55 @@ struct GenotypeGenerator
 
   bool valid_genotype(Genotype& genotype)
   {
-    if(!valid_growing_faces(genotype,1))
-      return false;
-    if(!valid_bindings(genotype))
-      return false;
-    return true;
+    return (valid_growing_faces(genotype,1) && valid_bindings(genotype));
   }
 
-  void increment_states(std::vector<uint32_t>& states)
+  void increment_states(std::vector<int32_t>& states)
   {
     ++states.back();
-    uint32_t zero_state_init=states[0];
-    for(uint32_t rind=states.size();rind>0;--rind) {
-      if(states[rind-1]>=n_necklaces) {
-        if(rind==1) {
+    int32_t zero_state_init=states[0];
+    for(int32_t rind=states.size()-1;rind>=0;--rind) {
+      if(states[rind]>=static_cast<int32_t>(n_necklaces)) {
+        if(rind==0) {
           is_done=true;
           return;
         }
         else {
-          states[rind-1]=0;
-          ++states[rind-2];
+          states[rind]=0;
+          ++states[rind-1];
         }
       }
     }
-    if(zero_state_init==1 && states[0]!=1)
-      states[1]=colours+2;
-    if(zero_state_init==static_cast<uint32_t>(colours+2) && states[0]!=static_cast<uint32_t>(colours+2)) {
-      is_done=true;
-      return;
-    }
+    /*! short cuts based on 0001, 0013 etc ideas, not valid in negative number
+     would need new offsets to determine location in necklace chain*/
+    
+    //if(zero_state_init==1 && states[0]!=1)
+    //  states[1]=high_colours+2;
+    //if(zero_state_init==(high_colours+2) && states[0]!=(high_colours+2)) {
+    //  is_done=true;
+    // return;
+    //}
     auto max_iter=std::max_element(states.begin(),states.end());
-    std::replace(max_iter,states.end(),static_cast<uint32_t>(0),*max_iter);
+    std::replace(max_iter,states.end(),0,*max_iter);
   }
 
   Genotype next_genotype() {
     Genotype genotype;
+    
     while(!is_done) {
-      inc_lab:
+    inc_lab:
       genotype.clear();
       genotype.reserve(n_genes*4);
-      for(uint8_t index=0; index!= n_genes;++index) {
-        uint8_t input_face=*std::max_element(genotype.begin(),genotype.end());
-        uint8_t next_max_face= input_face>0 ? ((input_face-1)/2)*2+3 : 1;
 
-	      while(!valid_growing_faces(necklaces[necklace_states[index]], next_max_face)) {
+      for(uint8_t index=0; index!= n_genes;++index) {
+        int8_t input_face=*std::max_element(genotype.begin(),genotype.end());
+        int8_t next_max_face= input_face>0 ? ((input_face-1)/2)*2+3 : 1;
+
+        while(!valid_growing_faces(necklaces[necklace_states[index]], next_max_face)) {
           const uint32_t post_inc = necklace_states[index]+1;
-	        if(post_inc==necklaces.size()) {
+          if(post_inc==necklaces.size()) {
             increment_states(necklace_states);
-	          goto inc_lab;
+            goto inc_lab;
           }
           std::fill(necklace_states.begin()+index,necklace_states.end(),post_inc);
         }

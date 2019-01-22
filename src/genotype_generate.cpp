@@ -14,8 +14,8 @@ std::vector<Genotype> SampleMinimalGenotypes(PhenotypeTable* pt)
 
   std::cout << "Generating " <<+ simulation_params::n_samples << " samples \n";
 
-  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes, simulation_params::colours);
-  ggenerator.init();
+  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes, -1, simulation_params::colours);
+  //ggenerator.init();
 
   std::cout << "Threshold is : " << (ceil(simulation_params::phenotype_builds * simulation_params::UND_threshold));
   std::cout << " out of " <<+ simulation_params::phenotype_builds << " builds \n";
@@ -127,8 +127,8 @@ std::vector<Genotype> ExhaustiveMinimalGenotypesFiltered(PhenotypeTable* pt)
 
   std::cout << "Generating all minimal samples\n";
 
-  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes, simulation_params::colours);
-  ggenerator.init();
+  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes, -1,simulation_params::colours);
+  //ggenerator.init();
   Genotype genotype, nullg;
   Phenotype_ID rare_pID = {0, 0}, unbound_pID = {255, 0};
   std::vector<Phenotype_ID> pIDs;
@@ -167,8 +167,8 @@ std::vector<Genotype> ExhaustiveMinimalGenotypesFilteredDuplicate(std::vector<Ge
 
   std::cout << "Generating all minimal samples and adding duplicate gene\n";
 
-  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes - 1, simulation_params::colours);
-  ggenerator.init();
+  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes - 1,-1, simulation_params::colours);
+  //ggenerator.init();
   Genotype genotype, nullg;
   Phenotype_ID rare_pID = {0, 0}, unbound_pID = {255, 0};
   std::vector<Phenotype_ID> pIDs;
@@ -211,8 +211,8 @@ std::vector<Genotype> ExhaustiveMinimalGenotypesFastFiltered(PhenotypeTable* pt)
 
   std::cout << "Generating all minimal samples\n";
 
-  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes, simulation_params::colours);
-  ggenerator.init();
+  GenotypeGenerator ggenerator = GenotypeGenerator(simulation_params::n_genes, -1,simulation_params::colours);
+  //ggenerator.init();
   Genotype genotype, nullg;
   uint64_t good_genotypes = 0, generated_genotypes = 0;
 
@@ -230,7 +230,6 @@ std::vector<Genotype> ExhaustiveMinimalGenotypesFastFiltered(PhenotypeTable* pt)
       continue;
     }
 
-
     good_genotypes++;
     genomes.emplace_back(genotype);
 
@@ -244,55 +243,54 @@ std::vector<Genotype> ExhaustiveMinimalGenotypesFastFiltered(PhenotypeTable* pt)
 
 
 // Member functions of the NecklaceFactory structure
-void NecklaceFactory::GenNecklaces(int8_t c)
-{
-  colours=c;
-  crsms_gen(1,1);
-}
 
 
-bool NecklaceFactory::is_finite_necklace(std::vector<uint8_t>& neck)
+bool NecklaceFactory::is_finite_necklace(std::vector<int8_t>& neck)
 {
   //internal infinite loop
-  if((IntegerAssembly::InteractionMatrix(neck[1], neck[3]) != 0) || (IntegerAssembly::InteractionMatrix(neck[2], neck[4]) != 0))
+  if(IntegerAssembly::InteractionMatrix(neck[1], neck[3]) || IntegerAssembly::InteractionMatrix(neck[2], neck[4]))
     return false;
+  const Genotype geno(neck.begin()+1,neck.end());
+  return IntegerAssembly::GetActiveInterfaces(geno).size()<=1;
+  /*
+  return false;
   bool a_pair=false;
   for(uint8_t base=1; base<4;++base) {
     if(neck[base]==0)
-continue;
-    uint8_t b1=std::count(neck.begin()+1,neck.end(),neck[base]);
-    uint8_t b2=std::count(neck.begin()+1,neck.end(),OppositeEdge(neck[base]));
-  if(b1 && b2) {
-//internal branching point/degenerate double loop
-if(b1+b2>2)
-  return false;
-else {
-  //internal unique double loop
-  if(a_pair)
-    return false;
-  else
-    a_pair=true;
-}
+      continue;
+    //uint8_t b1=std::count(neck.begin()+1,neck.end(),neck[base]);
+    //uint8_t b2=std::count(neck.begin()+1,neck.end(),OppositeEdge(neck[base]));
+    if(auto b1=std::count(neck.begin()+1,neck.end(),neck[base]) && auto b2=std::count(neck.begin()+1,neck.end(),OppositeEdge(neck[base]))) {
+      //internal branching point/degenerate double loop
+      if(b1+b2>2)
+        return false;
+      else {
+        //internal unique double loop
+        if(a_pair)
+          return false;
+        else
+          a_pair=true;
+      }
     }
   }
   return true;
+  */
 }
 
-void NecklaceFactory::is_necklace(uint64_t j)
+void NecklaceFactory::is_necklace(int64_t j)
 {
-  if(4%j==0)
-    if(is_finite_necklace(necklace_grower))
-      necklaces.emplace_back(std::vector<uint8_t>{necklace_grower.begin()+1,necklace_grower.end()});
+  if(4%j==0 && is_finite_necklace(necklace_grower))
+    necklaces.emplace_back(std::vector<int8_t>{necklace_grower.begin()+1,necklace_grower.end()});
 }
 
-void NecklaceFactory::crsms_gen(uint64_t n, uint64_t j)
+void NecklaceFactory::crsms_gen(int64_t n, int64_t j)
 {
   if(n>4)
     is_necklace(j);
   else {
     necklace_grower[n]=necklace_grower[n-j];
     crsms_gen(n+1,j);
-    for(uint64_t i=necklace_grower[n-j]+1;i<colours;++i) {
+    for(int64_t i=necklace_grower[n-j]+1;i<=high_colours;++i) {
       necklace_grower[n]=i;
       crsms_gen(n+1,n);
     }
