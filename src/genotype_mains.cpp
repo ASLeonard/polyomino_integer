@@ -16,7 +16,7 @@ namespace simulation_params
   bool exhaustive, metrics, duplicate_exhaustive;
   bool table, quick_map;
 
-  std::mt19937 RNG_Engine(std::random_device{}());
+  // std::mt19937 RNG_Engine(std::random_device{}());
 }
 //
 // int main (int argc, char *argv[])
@@ -307,5 +307,26 @@ int main() {
 
   for(auto a : AssemblePlasticGenotype(g,&p))
     std::cout<<a<<std::endl;
+
+  auto qq=GenotypeGenerator(1,-1,4);
+  if(false) {
+    for(auto v : qq.necklaces) {
+      for(auto m : v)
+        std::cout<<+m<<" ";
+      std::cout<<"\n";
+    }
+  }
+
+
+   Genotype gx =qq();
+   do{
+     for(auto m : gx)
+       std::cout<<+m<<" ";
+     std::cout<<"\n";
+     gx =qq();
+
+   }while(gx.size()!=0);
+  
+  
 
 }

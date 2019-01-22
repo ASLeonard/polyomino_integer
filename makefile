@@ -47,7 +47,7 @@ API_OBJECTS := $(patsubst $(SRCDIR)/%,$(MODULEDIR)/%,$(API_SOURCES:.$(SRCEXT)=.$
 
 
 #Default Make
-all: Pe
+all: GP
 
 #Clean only Objects
 clean:
