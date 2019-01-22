@@ -5,7 +5,7 @@ CXX         := g++
 
 #The Target Binary Program
 PE_TARGET   := assembly_mapper
-API_TARGET 	:= lib_integer_model_api.so
+API_TARGET 	:= polyo
 GP_TARGET		:= gpmap
 
 
@@ -15,6 +15,7 @@ INCDIR      := includes
 LIBDIR      := polyomino_core
 BUILDDIR    := build
 TARGETDIR   := bin
+MODULEDIR		:= module
 PROFDIR	    := profiling
 SRCEXT      := cpp
 DEPEXT      := d
@@ -38,9 +39,11 @@ INCDEP      := -I$(INCDIR) -I$(LIBDIR)/$(INCDIR)
 #---------------------------------------------------------------------------------
 PE_SOURCES := $(shell find $(SRCDIR) -type f -name integer_*.$(SRCEXT))
 GP_SOURCES := $(shell find $(SRCDIR) -type f -name genotype_*.$(SRCEXT))
+API_SOURCES := $(shell find $(SRCDIR) -type f -name genotype_*.$(SRCEXT))
 
 PE_OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(PE_SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 GP_OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(GP_SOURCES:.$(SRCEXT)=.$(OBJEXT)))
+API_OBJECTS := $(patsubst $(SRCDIR)/%,$(MODULEDIR)/%,$(API_SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
 
 #Default Make
@@ -49,9 +52,9 @@ all: Pe
 #Clean only Objects
 clean:
 	@$(RM) -rf $(BUILDDIR)
+	@$(RM) -rf $(MODULEDIR)
 
 #Pull in dependency info for *existing* .o files
-
 -include $(PE_OBJECTS:.$(OBJEXT)=.$(DEPEXT))
 -include $(CORE_OBJECTS:.$(OBJEXT)=.$(DEPEXT))
 
@@ -63,9 +66,9 @@ GP: $(GP_OBJECTS) $(PE_OBJECTS) $(CORE_OBJECTS)
 	@mkdir -p $(TARGETDIR)
 	$(CXX) $(CXXFLAGS) -Wl,--gc-sections -o $(TARGETDIR)/$(PE_TARGET) $^
 
-API: $(PE_OBJECTS) $(CORE_OBJECTS)
-	@mkdir -p $(TARGETDIR)
-	$(CXX)  -shared -fPIC $(CXXFLAGS) -o scripts/$(API_TARGET) $^
+API: $(GP_OBJECTS) $(PE_OBJECTS) $(CORE_OBJECTS)
+	@mkdir -p $(MODULEDIR)
+	$(CXX)  -shared -fPIC $(CXXFLAGS) -o $(MODULEDIR)/$(API_TARGET) $^
 
 
 #Compile

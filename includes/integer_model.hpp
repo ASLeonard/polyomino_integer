@@ -1,14 +1,11 @@
 #pragma once
 
-
 #include "core_genotype.hpp"
 #include "core_phenotype.hpp"
 #include "core_evolution.hpp"
 
 using interface_type = uint8_t;
 using Genotype = std::vector<interface_type>;
-
-
 
 class IntegerAssembly : public PolyominoAssembly<IntegerAssembly> {
 

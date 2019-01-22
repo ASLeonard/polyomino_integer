@@ -5,33 +5,29 @@
 #include <set>
 
 
-// New pID set and PreProcessing functions
+
+// Useless functions, maintained here for name compatibility.
 
 std::vector<Phenotype_ID> GetSetPIDs(Genotype genotype, PhenotypeTable* pt_it)
 {
-  Clean_Genome(genotype, false);
-  std::vector<Phenotype_ID> pIDs = AssemblePlasticGenotype(genotype, pt_it);
-  std::sort(pIDs.begin(), pIDs.end());
-  return pIDs;
+  return AssemblePlasticGenotype(genotype, pt_it);
 }
 
 std::map<Phenotype_ID, uint16_t> GetPIDCounter(Genotype genotype, PhenotypeTable* pt_it)
 {
-  Clean_Genome(genotype, false);
-  std::map<Phenotype_ID, uint16_t> pID_counter = AssemblePlasticGenotypeFrequency(genotype, pt_it);
-  return pID_counter;
+  return AssemblePlasticGenotypeFrequency(genotype, pt_it);
 }
 
+// Useful functions.
 
+// This function can be changed to return a Set_to_Genome and become useful if exposed in the python API
 void PreProcessSampled(std::vector<Genotype> genomes, Set_to_Genome& set_to_genome, PhenotypeTable* pt)
 {
   Genotype genotype;
   std::vector<Phenotype_ID> pIDs;
-  uint8_t save_config_builds = simulation_params::phenotype_builds;
-  simulation_params::phenotype_builds = simulation_params::preprocess_builds;
 
   std::cout << "PreProcessing " <<+ genomes.size() << " genomes, building ";
-  std::cout <<+ simulation_params::preprocess_builds << "th times\n";
+  std::cout <<+ pt->phenotype_builds << "th times\n";
 
   #pragma omp parallel for schedule(dynamic) firstprivate(pIDs, genotype)
   for(uint64_t index=0; index < genomes.size(); index++)
@@ -45,10 +41,11 @@ void PreProcessSampled(std::vector<Genotype> genomes, Set_to_Genome& set_to_geno
     #pragma omp critical
       set_to_genome[pIDs].emplace_back(genotype);
   }
-  simulation_params::phenotype_builds = save_config_builds;
-  std::cout << "Set back build parameters to config value : " <<+ simulation_params::phenotype_builds << std::endl;
+
+  std::cout << "PreProcessing has ended" << std::endl;
 }
 
+// This function is probably not a priority anymore...
 void FilterExhaustive(std::vector<Genotype> genomes, PhenotypeTable* pt)
 {
   Genotype genotype;
@@ -56,8 +53,8 @@ void FilterExhaustive(std::vector<Genotype> genomes, PhenotypeTable* pt)
   std::vector<Phenotype_ID> pIDs;
   Phenotype_ID rare_pID = {0, 0}, unbound_pID = {255, 0};
 
-  std::cout << "Threshold is : " << (ceil(simulation_params::phenotype_builds * simulation_params::UND_threshold));
-  std::cout << " out of " <<+ simulation_params::phenotype_builds << " builds \n";
+  std::cout << "Threshold is : " << (ceil(pt->phenotype_builds * pt->UND_threshold));
+  std::cout << " out of " <<+ pt->phenotype_builds << " builds \n";
 
   #pragma omp parallel for schedule(dynamic) firstprivate(pIDs, genotype)
   for(uint64_t index=0; index < genomes.size(); index++)

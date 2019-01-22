@@ -29,7 +29,7 @@ interface_type OppositeEdge(const interface_type label) {
 
 
 
-std::map<Phenotype_ID, uint16_t> AssemblePlasticGenotypeFrequency(Genotype genotype,PhenotypeTable* pt) {
+std::map<Phenotype_ID, uint16_t> AssemblePlasticGenotypeFrequency(Genotype genotype, PhenotypeTable* pt) {
 
   IntegerAssembly::StripNoncodingGenotype(genotype);
   const std::vector<std::pair<InteractionPair,double> > edges = IntegerAssembly::GetActiveInterfaces(genotype);
@@ -66,12 +66,13 @@ std::map<Phenotype_ID, uint16_t> AssemblePlasticGenotypeFrequency(Genotype genot
 std::vector<Phenotype_ID> AssemblePlasticGenotype(Genotype genotype,PhenotypeTable* pt) {
 
   std::map<Phenotype_ID,uint16_t> ID_counter = AssemblePlasticGenotypeFrequency(genotype, pt);
-  std::vector<Phenotype_ID> Phenotype_IDs;
+  std::vector<Phenotype_ID> pIDs;
 
   for(auto& kv : ID_counter)
-    Phenotype_IDs.emplace_back(kv.first);
+    pIDs.emplace_back(kv.first);
 
-  return Phenotype_IDs;
+  std::sort(pIDs.begin(), pIDs.end());
+  return pIDs;
 }
 
 bool FilterDeathRare(std::map<Phenotype_ID,uint16_t> ID_counter) {
@@ -114,7 +115,7 @@ std::map<uint8_t,uint8_t> DuplicateGenes(Genotype& genome) {
 // int main() {
 //
 //
-//   Genotype g{0,0,0,1, 0,-1,0,2};
+//   Genotype g{0,0,0,1, 0,0,0,2};
 //   PhenotypeTable p = PhenotypeTable();
 //   //set params for table
 //   PhenotypeTable::phenotype_builds=20;
