@@ -6,9 +6,10 @@ from distutils import sysconfig
 
 cpp_args = ['-std=c++1z', '-fopenmp']
 
-# files = glob.glob(os.path.join('src', '*.cpp'))
-files = ['src/integer_model.cpp', 'src/genotype_phenotype.cpp', 'src/genotype_duplicate.cpp',
- 'src/genotype_iofunc.cpp', 'src/genotype_generate.cpp', 'src/genotype_api.cpp', 'src/genotype_wrap.cpp']
+files = glob.glob(os.path.join('src', '*.cpp'))
+# files = ['src/integer_model.cpp', 'src/genotype_phenotype.cpp', 'src/genotype_duplicate.cpp',
+#  'src/genotype_iofunc.cpp', 'src/genotype_generate.cpp', 'src/genotype_core_metrics.cpp',
+#  'src/genotype_metrics.cpp', 'src/genotype_api.cpp', 'src/genotype_wrap.cpp']
 
 # print(files)
 

@@ -8,7 +8,10 @@
 
 // Main Sampling function
 
-void GP_MapSampler(Set_to_Genome& set_to_genome, PhenotypeTable* pt)
+void GP_MapSampler(Set_to_Genome& set_to_genome, PhenotypeTable* pt,
+  std::string set_metric_file, std::string genome_metric_file,
+  uint8_t n_genes, u_int8_t metric_colours, uint32_t n_jiggle,
+  bool dup_aware)
 {
   Phenotype_ID unbound_pID = {255, 0}, rare_pID = {0, 0};
   double neutral_weight = 0;
@@ -17,11 +20,11 @@ void GP_MapSampler(Set_to_Genome& set_to_genome, PhenotypeTable* pt)
   for(Set_to_Genome::iterator iter = std::begin(set_to_genome); iter != std::end(set_to_genome); iter++)
     number_of_genomes += (iter->second).size();
   std::cout << "There are " <<+ number_of_genomes << " genomes to jiggle a ";
-  std::cout <<+ simulation_params::n_jiggle << "times! \n";
+  std::cout <<+ n_jiggle << "times! \n";
 
   // Create new files and open them for writing (erase previous data)
-  std::ofstream set_metric_out(io_params::set_metric_file);
-  std::ofstream genome_metric_out(io_params::genome_metric_file);
+  std::ofstream set_metric_out(set_metric_file);
+  std::ofstream genome_metric_out(genome_metric_file);
   header_metric_files(set_metric_out, genome_metric_out);
 
   for(Set_to_Genome::iterator iter = std::begin(set_to_genome); iter != std::end(set_to_genome); iter++)
@@ -35,24 +38,24 @@ void GP_MapSampler(Set_to_Genome& set_to_genome, PhenotypeTable* pt)
     if(((iter->first).front() == rare_pID) || ((iter->first).back() == unbound_pID))
       continue;
 
-    Set_Metrics set_metrics(simulation_params::n_genes, simulation_params::metric_colours);
+    Set_Metrics set_metrics(n_genes, metric_colours);
     set_metrics.ref_pIDs = iter->first;
 
     for(auto genotype: iter->second)
     {
-      neutral_weight = ((double) NeutralSize(genotype, 1, simulation_params::metric_colours - 1)) / simulation_params::n_jiggle; // This weight will be counted n_jiggle time when added to form the total neutral weight
+      neutral_weight = ((double) NeutralSize(genotype, 1, metric_colours - 1)) / n_jiggle; // This weight will be counted n_jiggle time when added to form the total neutral weight
       set_metrics.originals.emplace_back(genotype);
 
       #pragma omp parallel for schedule(dynamic) firstprivate(genotype, neutral_weight)
-      for(uint32_t nth_jiggle=0; nth_jiggle<simulation_params::n_jiggle; ++nth_jiggle)
+      for(uint32_t nth_jiggle=0; nth_jiggle<n_jiggle; ++nth_jiggle)
       {
         Clean_Genome(genotype, false);
-        JiggleGenotype(genotype);
+        JiggleGenotype(genotype, metric_colours, dup_aware);
 
-        Genotype_Metrics genome_metric(simulation_params::n_genes, simulation_params::metric_colours);
+        Genotype_Metrics genome_metric(n_genes, metric_colours);
         genome_metric.set_reference(genotype, iter->first, neutral_weight);
 
-        std::map<Phenotype_ID, uint16_t> pID_counter = GetPIDCounter(genotype, pt);
+        std::map<Phenotype_ID, uint16_t> pID_counter = AssemblePlasticGenotypeFrequency(genotype, pt);
         genome_metric.pID_counter.insert(std::begin(pID_counter), std::end(pID_counter));
 
         std::vector<Phenotype_ID> pIDs;
@@ -62,9 +65,9 @@ void GP_MapSampler(Set_to_Genome& set_to_genome, PhenotypeTable* pt)
         if(pIDs != iter->first)
           set_metrics.misclassified[genotype] = pIDs;
 
-        for(Genotype neighbour : genotype_neighbourhood(genotype))
+        for(Genotype neighbour : genotype_neighbourhood(genotype, metric_colours))
         {
-           std::vector<Phenotype_ID> neighbour_pIDs = GetSetPIDs(neighbour, pt);
+           std::vector<Phenotype_ID> neighbour_pIDs = AssemblePlasticGenotype(neighbour, pt);
            genome_metric.analyse_pIDs(neighbour_pIDs);
          }
          #pragma omp critical
@@ -80,9 +83,9 @@ void GP_MapSampler(Set_to_Genome& set_to_genome, PhenotypeTable* pt)
 
 // Subroutine of the GP_MapSampler
 
-void JiggleGenotype(Genotype& genotype)
+void JiggleGenotype(Genotype& genotype, uint8_t metric_colours, bool dup_aware)
 {
-  uint8_t max_colour = simulation_params::metric_colours;
+  uint8_t max_colour = metric_colours;
   uint8_t min_colour =* std::max_element(genotype.begin(), genotype.end());
 
   if(min_colour + 1 == max_colour)
@@ -96,13 +99,13 @@ void JiggleGenotype(Genotype& genotype)
 
   std::map <uint8_t, uint8_t> dups;
 
-  if(simulation_params::dup_aware)
+  if(dup_aware)
     dups = DuplicateGenes(genotype);
 
   for(auto& base : genotype)
-    base= (base==0) ? neutral_colours[jiggle_index(simulation_params::RNG_Engine)] : base;
+    base= (base==0) ? neutral_colours[jiggle_index(RNG_Engine)] : base;
 
-  if(simulation_params::dup_aware)
+  if(dup_aware)
   {
     for(auto dup: dups)
     {
@@ -113,20 +116,20 @@ void JiggleGenotype(Genotype& genotype)
   }
 }
 
-std::vector<Genotype> genotype_neighbourhood(const Genotype& genome)
+std::vector<Genotype> genotype_neighbourhood(const Genotype& genome, u_int8_t metric_colours)
 {
   std::vector<Genotype> neighbours;
   Genotype neighbour;
 
-  std::vector<uint8_t> mutants(simulation_params::metric_colours);
+  std::vector<uint8_t> mutants(metric_colours);
   std::iota(mutants.begin(), mutants.end(), 0);
 
-  for(uint8_t index=0; index<simulation_params::n_genes*4; ++index)
+  for(uint8_t index=0; index<genome.size(); ++index)
   {
     std::swap(*std::find(mutants.begin(), mutants.end(),genome[index]), mutants.back());
 
     neighbour = genome;
-    for(int j=0; j<simulation_params::metric_colours-1; ++j)
+    for(int j=0; j<metric_colours-1; ++j)
     {
       neighbour[index] = mutants[j];
       neighbours.emplace_back(neighbour);
