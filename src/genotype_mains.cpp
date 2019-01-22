@@ -307,7 +307,8 @@ int main() {
 
   for(auto a : AssemblePlasticGenotype(g,&p))
     std::cout<<a<<std::endl;
-  auto qq=GenotypeGenerator(2,-1,4);
+
+  auto qq=GenotypeGenerator(1,-1,4);
   if(false) {
     for(auto v : qq.necklaces) {
       for(auto m : v)
@@ -315,6 +316,7 @@ int main() {
       std::cout<<"\n";
     }
   }
+
 
    Genotype gx =qq();
    do{

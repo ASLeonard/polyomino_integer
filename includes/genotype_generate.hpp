@@ -119,14 +119,15 @@ struct GenotypeGenerator
       }
     }
     /*! short cuts based on 0001, 0013 etc ideas, not valid in negative number
-     would need new offsets to determine location in necklace chain*/
-    
-    //if(zero_state_init==1 && states[0]!=1)
-    //  states[1]=high_colours+2;
-    //if(zero_state_init==(high_colours+2) && states[0]!=(high_colours+2)) {
-    //  is_done=true;
-    // return;
-    //}
+      would need new offsets to determine location in necklace chain*/
+    if(false && low_colours==0) {
+      if(zero_state_init==1 && states[0]!=1)
+        states[1]=high_colours+2;
+      if(zero_state_init==(high_colours+2) && states[0]!=(high_colours+2)) {
+        is_done=true;
+        return;
+      }
+    }
     auto max_iter=std::max_element(states.begin(),states.end());
     std::replace(max_iter,states.end(),0,*max_iter);
   }
