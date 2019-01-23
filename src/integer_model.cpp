@@ -31,7 +31,7 @@ interface_type OppositeEdge(const interface_type label) {
 
 std::map<Phenotype_ID, uint16_t> AssemblePlasticGenotypeFrequency(Genotype genotype, PhenotypeTable* pt) {
 
-  IntegerAssembly::StripNoncodingGenotype(genotype);
+  // IntegerAssembly::StripNoncodingGenotype(genotype);
   const std::vector<std::pair<InteractionPair,double> > edges = IntegerAssembly::GetActiveInterfaces(genotype);
 
   std::vector<int8_t> assembly_information;
@@ -60,7 +60,7 @@ std::map<Phenotype_ID, uint16_t> AssemblePlasticGenotypeFrequency(Genotype genot
 
   pt->RelabelPhenotypes(Phenotype_IDs);
 
-  return pt->PhenotypeFrequencies(Phenotype_IDs);
+  return (pt->PhenotypeFrequencies(Phenotype_IDs));
 }
 
 std::vector<Phenotype_ID> AssemblePlasticGenotype(Genotype genotype,PhenotypeTable* pt) {
@@ -68,7 +68,7 @@ std::vector<Phenotype_ID> AssemblePlasticGenotype(Genotype genotype,PhenotypeTab
   std::map<Phenotype_ID,uint16_t> ID_counter = AssemblePlasticGenotypeFrequency(genotype, pt);
   std::vector<Phenotype_ID> pIDs;
 
-  for(auto& kv : ID_counter)
+  for(auto kv : ID_counter)
     pIDs.emplace_back(kv.first);
 
   std::sort(pIDs.begin(), pIDs.end());

@@ -22,6 +22,7 @@ bool FilterDeathRare(std::map<Phenotype_ID,uint16_t> ID_counter);
 
 // Temporary fix for compatibility purpose
 typedef std::map<std::vector<Phenotype_ID>, std::vector<Genotype>> Set_to_Genome;
+typedef std::map<std::string, std::vector<Genotype>> String_to_Genome;
 
 void Clean_Genome(Genotype& genome, bool Remove_Duplicates);
 std::map<uint8_t,uint8_t> DuplicateGenes(Genotype& genome);

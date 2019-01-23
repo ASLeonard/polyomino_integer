@@ -20,5 +20,6 @@ scripts/*.pdf
 .\#*
 *txt
 
-# Ignore .txt files in the notebooks directory
+# Ignore checkpoints and .txt files in the notebooks directory
+notebooks/.ipynb_checkpoints
 notebooks/*.txt

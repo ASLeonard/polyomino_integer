@@ -1,10 +1,11 @@
 #include "genotype_phenotype.hpp"
+#include "pybind11/pybind11.h"
 #include <sstream>
 #include <iterator>
 #include <functional>
 #include <set>
 
-
+namespace py = pybind11;
 
 // Useless functions, maintained here for name compatibility.
 
@@ -26,8 +27,8 @@ void PreProcessSampled(std::vector<Genotype> genomes, Set_to_Genome& set_to_geno
   Genotype genotype;
   std::vector<Phenotype_ID> pIDs;
 
-  std::cout << "PreProcessing " <<+ genomes.size() << " genomes, building ";
-  std::cout <<+ pt->phenotype_builds << "th times\n";
+  py::print("Mapping", genomes.size(), "genomes, building", pt->phenotype_builds,
+    "th times");
 
   #pragma omp parallel for schedule(dynamic) firstprivate(pIDs, genotype)
   for(uint64_t index=0; index < genomes.size(); index++)
@@ -36,13 +37,13 @@ void PreProcessSampled(std::vector<Genotype> genomes, Set_to_Genome& set_to_geno
     pIDs = GetSetPIDs(genotype, pt);
 
     if(index % 100 ==0)
-      std::cout << "Currently preprocessing genome : " <<+ index << " out of " <<+ genomes.size() << "\n";
+      py::print("Currently preprocessing genome :", index, "out of", genomes.size());
 
     #pragma omp critical
       set_to_genome[pIDs].emplace_back(genotype);
   }
 
-  std::cout << "PreProcessing has ended" << std::endl;
+  py::print("The GP-Map has been built!");
 }
 
 // This function is probably not a priority anymore...
@@ -60,7 +61,7 @@ void FilterExhaustive(std::vector<Genotype> genomes, PhenotypeTable* pt)
   for(uint64_t index=0; index < genomes.size(); index++)
   {
     genotype = genomes[index];
-    pIDs = GetSetPIDs(genotype, pt);
+    pIDs = AssemblePlasticGenotype(genotype, pt);
     if(pIDs.front() == rare_pID || pIDs.back() == unbound_pID)
       continue;
     else

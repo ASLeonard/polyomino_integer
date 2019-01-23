@@ -1,8 +1,11 @@
 #include "genotype_iofunc.hpp"
+#include "pybind11/pybind11.h"
 #include <sstream>
 #include <iterator>
 #include <string>
 #include <utility>
+
+namespace py = pybind11;
 
 // namespace io_params
 // {
@@ -84,7 +87,7 @@
 
 void PrintGenomeFile(std::string genome_file, std::vector<Genotype>& genomes)
 {
-  std::cout << "Printing " <<+ genomes.size() << " genomes to file : " << genome_file << "\n";
+  py::print("Printing", genomes.size(), "genomes to file :", genome_file);
   std::ofstream fout(genome_file);
   for(auto genome: genomes)
   {
@@ -96,7 +99,7 @@ void PrintGenomeFile(std::string genome_file, std::vector<Genotype>& genomes)
 
 void PrintPreProcessFile(std::string preprocess_file, Set_to_Genome& set_to_genome)
 {
-  std::cout << "Printing preprocessed genomes to file : " << preprocess_file << "\n";
+  py::print("Printing preprocessed genomes to file :", preprocess_file);
   std::ofstream fout(preprocess_file);
 
   for(Set_to_Genome::iterator iter = std::begin(set_to_genome); iter != std::end(set_to_genome); iter++)
@@ -117,7 +120,7 @@ void PrintPreProcessFile(std::string preprocess_file, Set_to_Genome& set_to_geno
 
 void PrintPreProcessFile2(std::string preprocess_file, Set_to_Genome& set_to_genome)
 {
-  std::cout << "Printing preprocessed genomes to file : " << preprocess_file << "\n";
+  py::print("Printing preprocessed genomes to file :", preprocess_file);
   std::ofstream fout(preprocess_file);
 
   for(Set_to_Genome::iterator iter = std::begin(set_to_genome); iter != std::end(set_to_genome); iter++)
@@ -136,7 +139,7 @@ void PrintPreProcessFile2(std::string preprocess_file, Set_to_Genome& set_to_gen
 
 void PrintSetTable(std::string set_file, Set_to_Genome& set_to_genome)
 {
-  std::cout << "Printing set table to file : " << set_file << "\n";
+  py::print("Printing set table to file :", set_file);
   std::ofstream fout(set_file);
 
   for(Set_to_Genome::iterator iter = std::begin(set_to_genome); iter != std::end(set_to_genome); iter++)
@@ -186,7 +189,7 @@ void LoadGenomeFile(std::string genome_file, std::vector<Genotype>& genomes)
   Genotype genotype;
   std::ifstream genome_in(genome_file);
 
-  std::cout << "Loading genome from file : " << genome_file << "\n";
+  py::print("Loading genome from file :", genome_file);
 
   while (std::getline(genome_in, str))
   {
@@ -205,7 +208,7 @@ void LoadPreProcessFile(std::string preprocess_file, Set_to_Genome& set_to_genom
   std::vector<Phenotype_ID> pIDs;
   std::ifstream fin(preprocess_file);
 
-  std::cout << "Loading preprocess file : " << preprocess_file << "\n";
+  py::print("Loading preprocess file :", preprocess_file);
 
   while (std::getline(fin, str))
   {
@@ -230,7 +233,7 @@ void LoadPhenotypeTable(std::string phenotype_file, PhenotypeTable* pt_it)
   std::ifstream pheno_in(phenotype_file);
   std::string str;
 
-  std::cout << "Loading phenotype table : " << phenotype_file << "\n";
+  py::print("Loading phenotype table :", phenotype_file);
 
   while (std::getline(pheno_in, str))
   {
