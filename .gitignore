@@ -19,3 +19,6 @@ scripts/*.pdf
 \#*\#
 .\#*
 *txt
+
+# Ignore .txt files in the notebooks directory
+notebooks/*.txt

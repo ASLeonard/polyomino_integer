@@ -10,8 +10,11 @@
 //   extern bool allow_duplicates;
 // }
 
+
+std::vector<Genotype> ExhaustiveMinimalGenotypesFiltered(PhenotypeTable* pt,
+  uint8_t n_genes, int8_t low_colour, int8_t high_colour);
+
 std::vector<Genotype> ExhaustiveMinimalGenotypesIL(PhenotypeTable* pt);
-std::vector<Genotype> ExhaustiveMinimalGenotypesFiltered(PhenotypeTable* pt);
 std::vector<Genotype> SampleMinimalGenotypes(PhenotypeTable* pt);
 std::vector<Genotype> ExhaustiveMinimalGenotypesFastFiltered(PhenotypeTable* pt);
 // std::vector<Genotype> ExhaustiveFullGenotypes2(uint16_t colours, PhenotypeTable* pt);
@@ -51,7 +54,7 @@ struct GenotypeGenerator
   uint32_t n_necklaces;
 
 
-  GenotypeGenerator(uint8_t a,int8_t b,int8_t c) {
+  GenotypeGenerator(uint8_t a, int8_t b, int8_t c) {
     n_genes= a;
     low_colours=b;
     high_colours=c;
@@ -59,7 +62,7 @@ struct GenotypeGenerator
     NecklaceFactory necks=NecklaceFactory(low_colours,high_colours);
     necklaces=necks.necklaces;
     n_necklaces=necklaces.size();
-    necklace_states[0]=0;
+    necklace_states[0]=1;
   }
 
   Genotype operator() ()
@@ -120,7 +123,7 @@ struct GenotypeGenerator
     }
     /*! short cuts based on 0001, 0013 etc ideas, not valid in negative number
       would need new offsets to determine location in necklace chain*/
-    if(false && low_colours==0) {
+    if(low_colours==0) {
       if(zero_state_init==1 && states[0]!=1)
         states[1]=high_colours+2;
       if(zero_state_init==(high_colours+2) && states[0]!=(high_colours+2)) {

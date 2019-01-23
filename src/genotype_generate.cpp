@@ -124,13 +124,13 @@ std::vector<Genotype> SampleMinimalGenotypes(PhenotypeTable* pt,
 // }
 
 std::vector<Genotype> ExhaustiveMinimalGenotypesFiltered(PhenotypeTable* pt,
-  uint8_t n_genes, int8_t colours)
+  uint8_t n_genes, int8_t low_colour, int8_t high_colour)
 {
   std::vector<Genotype> genomes;
 
   std::cout << "Generating all minimal samples\n";
 
-  GenotypeGenerator ggenerator = GenotypeGenerator(n_genes, -1, colours);
+  GenotypeGenerator ggenerator = GenotypeGenerator(n_genes, low_colour, high_colour);
   //ggenerator.init();
   Genotype genotype, nullg;
   Phenotype_ID rare_pID = {0, 0}, unbound_pID = {255, 0};
