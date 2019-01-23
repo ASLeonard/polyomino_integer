@@ -31,7 +31,7 @@ interface_type OppositeEdge(const interface_type label) {
 
 std::map<Phenotype_ID, uint16_t> AssemblePlasticGenotypeFrequency(Genotype genotype, PhenotypeTable* pt) {
 
-  IntegerAssembly::StripNoncodingGenotype(genotype);
+  //IntegerAssembly::StripNoncodingGenotype(genotype);
   const std::vector<std::pair<InteractionPair,double> > edges = IntegerAssembly::GetActiveInterfaces(genotype);
 
   std::vector<int8_t> assembly_information;
