@@ -125,8 +125,8 @@ struct GenotypeGenerator
       would need new offsets to determine location in necklace chain*/
     if(low_colours==0) {
       if(zero_state_init==1 && states[0]!=1)
-        states[1]=high_colours+2;
-      if(zero_state_init==(high_colours+2) && states[0]!=(high_colours+2)) {
+        states[1]=high_colours+3;
+      if(zero_state_init==(high_colours+3) && states[0]!=(high_colours+3)) {
         is_done=true;
         return;
       }
