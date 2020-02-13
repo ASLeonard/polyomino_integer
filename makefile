@@ -34,7 +34,7 @@ INCDEP      := -I$(INCDIR) -I$(LIBDIR)/$(INCDIR)
 #---------------------------------------------------------------------------------
 #DO NOT EDIT BELOW THIS LINE
 #---------------------------------------------------------------------------------
-PE_SOURCES := $(shell find $(SRCDIR) -type f -name integer_*.$(SRCEXT))
+PE_SOURCES := $(shell find $(SRCDIR) -type f -name assembly_*.$(SRCEXT))
 PE_OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(PE_SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
 
@@ -73,5 +73,4 @@ check-and-reinit-submodules:
 	@if git submodule status | egrep -q '^[-]|^[+]' ; then \
 		echo "INFO: Need to reinitialize git submodules"; \
 		git submodule update --init; \
-
 	fi
